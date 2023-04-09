@@ -1,0 +1,87 @@
+---
+title: "01_produce_powerpoint"
+author: "tilchef"
+date: "2023-04-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 0. Setup
+
+## 0.1 Initialise Environment
+
+```{r}
+rm(list = ls())
+
+# general use
+library(dplyr)
+
+# connecting to NSW Environment API
+library(httr)
+library(jsonlite)
+
+# graphs and visualisations
+library(ggplot2)
+
+# ms office and markup tools
+library(officer)
+library(rvg)
+
+```
+
+## 0.2 Define Functions
+,"Maximums","Averages"
+```{r}
+extract_last_week_aq <- function(start_date=NULL,end_date=NULL){
+  filepath <- 'https://data.airquality.nsw.gov.au/api/Data/get_Observations'
+  
+  arguments <- '{"Parameters": ["PM10","PM2.5","OZONE","CO","NO2","SO2"],
+  "StartDate": "2023-02-28",
+  "EndDate": "2023-03-31",
+  "Categories": ["Averages"],
+  "SubCategories": ["Daily"],
+  "Frequency": ["24h average derived from 1h average"]}'
+  
+  data <- filepath %>%
+    POST(body=arguments
+         ,add_headers(c(`accept`='application/json'
+                        ,`Content-Type`='application/json'))
+         )%>%
+    content(as="text",encoding="UTF-8")%>%
+    fromJSON(flatten=TRUE)%>%
+    data.frame()
+  return(data)
+}
+
+test <- extract_last_week_aq("test","test")
+```
+
+```{r}
+
+filepath <- 'https://data.airquality.nsw.gov.au/api/Data/get_ParameterDetails'
+
+param<- filepath %>%
+    GET(body=list()
+         ,add_headers(`Content-Type`='application/json'))%>%
+    content(as="text",encoding="UTF-8")%>%
+    fromJSON(flatten=TRUE)%>%
+    data.frame()
+```
+
+
+```{r}
+
+filepath <- 'https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails'
+
+site<- filepath %>%
+    GET(body=list()
+         ,add_headers(`Content-Type`='application/json'))%>%
+    content(as="text",encoding="UTF-8")%>%
+    fromJSON(flatten=TRUE)%>%
+    data.frame()
+```
+
+
